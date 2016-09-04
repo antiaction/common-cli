@@ -13,10 +13,10 @@ import java.util.TreeMap;
 
 public class CommandLine {
 
-	List<Argument> switchArgsList = new LinkedList<Argument>();
+	public List<Argument> switchArgsList = new LinkedList<Argument>();
 
-	Map<Integer, Argument> idMap = new TreeMap<Integer, Argument>();
+	public Map<Integer, Argument> idMap = new TreeMap<Integer, Argument>();
 
-	List<String> unnamedArgsList = new LinkedList<String>();
+	public List<String> unnamedArgsList = new LinkedList<String>();
 
 }

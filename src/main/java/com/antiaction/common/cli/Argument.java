@@ -11,8 +11,12 @@ import java.util.List;
 
 public class Argument {
 
-	Option option;
-	String value;
-	List<String> values = new LinkedList<String>();
+	public String name;
+
+	public Option option;
+
+	public String value;
+
+	public List<String> values = new LinkedList<String>();
 
 }

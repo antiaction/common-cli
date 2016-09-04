@@ -13,11 +13,11 @@ import java.util.TreeMap;
 
 public class Options {
 
+	public boolean bSingleCharDashOptions = true;
+
 	protected Map<String, Option> longOptions = new TreeMap<String, Option>();
 
-	protected Map<String, Option> shortOption = new TreeMap<String, Option>();
-
-	protected Option[] singleOptions = new Option[ 256 ];
+	protected Map<Character, Option> shortOptions = new TreeMap<Character, Option>();
 
 	protected Map<String, Option> textOptions = new TreeMap<String, Option>();
 
@@ -26,101 +26,67 @@ public class Options {
 	public Options() {
 	}
 
-	/*
-	public Option addOption(String shortName, int id, String desc) {
-		return addOption( shortName, id, -1 );
+	public void setSingleCharDashOptions(boolean bSingleCharDashOptions) {
+		this.bSingleCharDashOptions = bSingleCharDashOptions;
 	}
-	*/
 
-	public Option addOption(String shortName, String longName, int id, int subId, String desc) {
+	public Option addTextOption(String command, int id, int subId, String desc) {
 		Option option = new Option();
+		option.type = Option.T_COMMAND;
 		option.id = id;
 		option.subId = subId;
 		option.desc = desc;
-		int idx;
-		int pIdx;
-		if ( longName != null && longName.length() > 0 ) {
-			idx = longName.indexOf( ':' );
-			if ( idx != -1 ) {
-				option.longName.substring( 0, idx++ );
-				pIdx = idx;
-			}
-			idx = longName.indexOf( '=' );
-			if ( idx == -1 ) {
-				option.longName = longName.substring( 2 );
-			}
-			else if ( idx > 2 ) {
-				option.name = longName.substring( 2, idx );
-				option.valueType = Option.VT_REQUIRED;
-			}
-			else {
-				throw new IllegalArgumentException( "Incomplete argument definition: " + longName );
-			}
-			longOptions.put( option.name, option );
-		}
-		else if ( shortName.startsWith( "-" ) ) {
-			if ( shortName.length() > 1 ) {
-				option = new Option();
-				option.type = Option.AT_MC;
-				option.id = id;
-				option.subId = subId;
-				option.name = shortName.substring( 1, 2 );
-				if ( shortName.length() > 2 ) {
-					if ( shortName.charAt( 2 ) == '=' ) {
-						option.shortValueType = Option.SVT_TEXT;
-					}
-					else if ( shortName.charAt( 2 ) == '[' ) {
-						idx = shortName.indexOf( ']', 3 );
-						if ( idx > 3 ) {
-							option.shortValueType = Option.SVT_OPTIONAL_CHAR;
-							option.shortValueOptions = shortName.substring( 3, idx );
-						}
-						if ( idx == -1 ) {
-							throw new IllegalArgumentException( "Missing ']': " + shortName );
-						}
-					}
-					else if ( shortName.charAt( 2 ) == '<' ) {
-						idx = shortName.indexOf( '>', 3 );
-						if ( idx > 3 ) {
-							option.shortValueType = Option.SVT_REQUIRED_CHAR;
-							option.shortValueOptions = shortName.substring( 3, idx );
-						}
-						if ( idx == -1 ) {
-							throw new IllegalArgumentException( "Missing '>': " + shortName );
-						}
-					}
-					else {
-						throw new IllegalArgumentException( "Invalid argument definition: " + shortName );
-					}
-				}
-				if ( option.name.charAt( 0 ) < 256 ) {
-					singleOptions[ option.name.charAt( 0 ) ] = option;
-				}
-				else {
-					throw new IllegalArgumentException( "Invalid chargument definition: " + shortName );
-				}
-			}
-			else {
-				throw new IllegalArgumentException( "Incomplete argument definition: " + shortName );
-			}
+		if ( command != null && command.length() > 0 && !command.startsWith( "-" ) ) {
+			option.command = command.toLowerCase();
+			textOptions.put( option.command, option );
 		}
 		else {
-			option = new Option();
-			option.type = Option.AT_TXT;
-			option.id = id;
-			option.subId = subId;
-			idx = shortName.indexOf( '=' );
-			if ( idx == -1 ) {
-				option.name = shortName.substring( 2 );
-			}
-			else if ( idx > 0 ) {
-				option.name = shortName.substring( 2, idx );
-				option.valueType = Option.VT_REQUIRED;
+			throw new IllegalArgumentException( "Invalid text option definition: " + command );
+		}
+		return option;
+	}
+
+	public Option addOption(String shortName, String longName, int id, int subId, String desc) {
+		if ( (shortName == null || shortName.length() == 0) && (longName == null || longName.length() == 0)) {
+			throw new IllegalArgumentException( "Invalid argument definition - missing both short and long name." );
+		}
+		Option option = new Option();
+		option.type = Option.T_OPTION;
+		option.id = id;
+		option.subId = subId;
+		option.desc = desc;
+		if ( longName != null ) {
+			if ( longName.startsWith( "--" ) ) {
+				longName = longName.substring( "--".length() );
+				if ( longName.length() > 0 ) {
+					option.longName = longName.toLowerCase();
+					longOptions.put( option.longName, option );
+				}
+				else {
+					throw new IllegalArgumentException( "Empty argument definition: --" + longName );
+				}
 			}
 			else {
-				throw new IllegalArgumentException( "Incomplete argument definition: " + shortName );
+				throw new IllegalArgumentException( "Invalid argument definition: " + longName );
 			}
-			textOptions.put( option.name, option );
+		}
+		if ( shortName != null ) {
+			if ( shortName.startsWith( "-" ) ) {
+				shortName = shortName.substring( "-".length() );
+				if ( shortName.length() > 0 ) {
+					if ( bSingleCharDashOptions && shortName.length() > 1 ) {
+						throw new IllegalArgumentException( "Invalid argument definition length: -" + shortName );
+					}
+					option.shortName = shortName;
+					shortOptions.put( option.shortName.charAt( 0 ), option );
+				}
+				else {
+					throw new IllegalArgumentException( "Empty argument definition length: -" + shortName );
+				}
+			}
+			else {
+				throw new IllegalArgumentException( "Invalid argument definition: " + shortName );
+			}
 		}
 		return option;
 	}
@@ -135,7 +101,7 @@ public class Options {
 		}
 		Option option = new Option();
 		option.id = id;
-		option.name = name;
+		option.shortName = name;
 		option.min = min;
 		option.max = max;
 		namedArguments.add( option );

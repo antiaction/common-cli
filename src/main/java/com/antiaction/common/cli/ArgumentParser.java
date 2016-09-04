@@ -14,6 +14,9 @@ public class ArgumentParser {
 	private static final int SAS_TEXT = 6;
 
 	public static CommandLine parse(Options options, String[] argsArray) throws ParseException {
+		if ( options == null ) {
+			throw new IllegalArgumentException( "Options can not be null!" );
+		}
 		if ( argsArray == null || argsArray.length == 0 ) {
 			return null;
 		}
@@ -23,23 +26,67 @@ public class ArgumentParser {
 		Option option;
 		Argument arg;
 		Argument nArg = null;
+		String tmpStr;
 		StringBuffer sb = new StringBuffer();
 		int aIdx = 0;
 		int cIdx;
+		int pIdx;
 		int nIdx = 0;
 		char c;
 		int state;
 		while ( aIdx < argsArray.length ) {
 			argStr = argsArray[ aIdx++ ];
 			if ( argStr.startsWith( "--" ) ) {
-				if ( argStr.length() == 2 ) {
-					// Add parameter
+				cIdx = 2;
+				pIdx = cIdx;
+				option = null;
+				arg = null;
+				while ( cIdx < argStr.length() && Character.isLetter( argStr.charAt( cIdx ) ) ) {
+					++cIdx;
+				}
+				if ( pIdx == cIdx ) {
+					throw new IllegalArgumentException( "Empty long name option!" );
+				}
+				tmpStr = argStr.substring( pIdx, cIdx ).toLowerCase();
+				option = options.longOptions.get(tmpStr);
+				if ( option == null ) {
+					throw new IllegalArgumentException( "Unknown option '--" + tmpStr + "'." );
+				}
+				arg = new Argument();
+				arg.name = "--" + tmpStr;
+				arg.option = option;
+				args.switchArgsList.add( arg );
+				args.idMap.put( option.id, arg );
+				if ( cIdx == argStr.length() ) {
+					if ( option.bValueRequired ) {
+						argStack.add( arg );
+					}
 				}
 				else {
-					//idx = argStr.indexOf(ch)
+					if ( !option.bValueRequired ) {
+						throw new IllegalArgumentException( "Option '" + arg.name + "' does not expect a value." );
+					}
+					if ( argStr.charAt( cIdx ) != '=') {
+						throw new IllegalArgumentException( "Option '" + arg.name + "' expected a trailing '='." );
+					}
+					tmpStr = argStr.substring( ++cIdx );
+					if ( tmpStr.length() > 0 ) {
+						c = tmpStr.charAt( 0 );
+						if ( c == '"' ) {
+							if ( tmpStr.length() == 1 || tmpStr.charAt( tmpStr.length() - 1 ) != '"' ) {
+								throw new IllegalArgumentException( "Argument value missing end quote (\")." );
+							}
+							tmpStr = tmpStr.substring( 1, tmpStr.length() - 1 );
+						}
+						else if ( c == '\'' ) {
+							if ( tmpStr.length() == 1 || tmpStr.charAt( tmpStr.length() - 1 ) != '\'' ) {
+								throw new IllegalArgumentException( "Argument value missing end quote (')." );
+							}
+							tmpStr = tmpStr.substring( 1, tmpStr.length() - 1 );
+						}
+					}
+					arg.value = tmpStr;
 				}
-				// unrecognized option `--la'
-				throw new UnsupportedOperationException();
 			}
 			else if ( argStr.startsWith("-") ) {
 				cIdx = 1;
@@ -50,31 +97,27 @@ public class ArgumentParser {
 					switch ( state ) {
 					case SAS_ARGCHAR:
 						c = argStr.charAt( cIdx++ );
-						option = null;
-						if ( c < 256 ) {
-							option = options.singleOptions[ c & 255 ];
-						}
+						option = options.shortOptions.get(c);
 						if ( option != null ) {
 							arg = new Argument();
+							arg.name = "-" + c;
 							arg.option = option;
 							args.switchArgsList.add( arg );
 							args.idMap.put( option.id, arg );
-							switch ( option.shortValueType ) {
-							case Option.SVT_NONE:
-								break;
-							case Option.SVT_OPTIONAL_CHAR:
-								state = SAS_OPTIONAL_CHAR;
-								break;
-							case Option.SVT_REQUIRED_CHAR:
-								state = SAS_REQUIRED_CHAR;
-								break;
-							case Option.SVT_TEXT:
+							if ( option.bValueRequired ) {
 								state = SAS_EQU_OR_TEXT;
-								break;
+							}
+							else if ( option.bShortValueOptional != null ) {
+								if ( option.bShortValueOptional == false) {
+									state = SAS_OPTIONAL_CHAR;
+								}
+								else {
+									state = SAS_REQUIRED_CHAR;
+								}
 							}
 						}
 						else {
-							throw new ParseException( "invalid option -- " + c );
+							throw new ParseException( "Unknown option '-" + c + "'." );
 						}
 						break;
 					case SAS_OPTIONAL_CHAR:
@@ -93,7 +136,7 @@ public class ArgumentParser {
 							arg.value = "" + c;
 						}
 						else {
-							throw new ParseException( "invalid argument '" + c + "' for option -- " + arg.option.name );
+							throw new ParseException( "invalid argument value '" + c + "' for option -- " + arg.option.shortName );
 						}
 						break;
 					case SAS_EQU_OR_TEXT:
@@ -202,11 +245,11 @@ public class ArgumentParser {
 		}
 		if ( !argStack.isEmpty() ) {
 			arg = argStack.remove();
-			throw new ParseException( "option requires an argument -- " + arg.option.name );
+			throw new ParseException( "option " + arg.name + " requires an argument." );
 		}
 		if ( nArg != null ) {
 			if ( nArg.values.size() < nArg.option.min ) {
-				throw new ParseException( "argument(s) required -- " + nArg.option.name );
+				throw new ParseException( "argument(s) required -- " + nArg.option.shortName );
 			}
 			nArg = null;
 			++nIdx;
@@ -214,7 +257,7 @@ public class ArgumentParser {
 		while ( nIdx < options.namedArguments.size() ) {
 			option = options.namedArguments.get( nIdx++ );
 			if ( option.min > 0 ) {
-				throw new ParseException( "argument(s) required -- " + option.name );
+				throw new ParseException( "argument(s) required -- " + option.shortName );
 			}
 		}
 		return args;
