@@ -4,11 +4,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.antiaction</groupId>
-		<artifactId>parent</artifactId>
-		<version>1-SNAPSHOT</version>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
 	</parent>
 
+	<groupId>com.antiaction</groupId>
 	<artifactId>common-cli</artifactId>
 	<version>0.2.0-SNAPSHOT</version>
 
@@ -36,36 +37,11 @@
 		</developer>
 	</developers>
 
-	<repositories>
-		<repository>
-			<id>antiaction-snapshots</id>
-			<name>Antiaction Snapshots Repository</name>
-			<url>https://www.antiaction.com:8443/repository/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-		</repository>
-		<repository>
-			<id>antiaction-releases</id>
-			<name>Antiaction Releases Repository</name>
-			<url>https://www.antiaction.com:8443/repository/releases/</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</repository>
-	</repositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.11</version>
+			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -86,6 +62,26 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.7.5.201505241946</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>  
 		</plugins>
 	</build>
 </project>
