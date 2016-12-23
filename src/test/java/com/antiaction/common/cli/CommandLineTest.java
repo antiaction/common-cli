@@ -31,14 +31,14 @@ public class CommandLineTest {
 		*/
 		try {
 			//CommandLine.Arguments arguments = cmdLine.parse( "-d -c".split( " " ) );
-			CommandLine cmdLine = ArgumentParser.parse( options, "-d C:\\*.gz".split( " " ) );
+			CommandLine cmdLine = ArgumentParser.parse( "-d C:\\*.gz".split( " " ), options, null );
 			Argument argument;
 			for ( int i=0; i<cmdLine.switchArgsList.size(); ++i) {
 				argument = cmdLine.switchArgsList.get( i );
 				System.out.println( argument.option.id + "=" + argument.value );
 			}
 		}
-		catch (ParseException e) {
+		catch (ArgumentParseException e) {
 			e.printStackTrace();
 		}
 	}

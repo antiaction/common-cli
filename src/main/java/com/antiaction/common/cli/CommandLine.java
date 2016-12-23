@@ -19,4 +19,6 @@ public class CommandLine {
 
 	public List<String> unnamedArgsList = new LinkedList<String>();
 
+	public String[] argsArray;
+
 }

@@ -13,14 +13,21 @@ public class ArgumentParser {
 	private static final int SAS_QUOTED_TEXT = 5;
 	private static final int SAS_TEXT = 6;
 
-	public static CommandLine parse(Options options, String[] argsArray) throws ParseException {
+	public static CommandLine parse(String[] argsArray, Options options, CommandLine args) throws ArgumentParseException {
 		if ( options == null ) {
 			throw new IllegalArgumentException( "Options can not be null!" );
 		}
-		if ( argsArray == null || argsArray.length == 0 ) {
-			return null;
+		if ( argsArray == null ) {
+			return args;
 		}
-		CommandLine args = new CommandLine();
+		if ( args == null ) {
+			args = new CommandLine();
+		}
+		/*
+		if ( argsArray.length == 0 ) {
+			return args;
+		}
+		*/
 		Queue<Argument> argStack = new LinkedList<Argument>();
 		String argStr;
 		Option option;
@@ -34,14 +41,15 @@ public class ArgumentParser {
 		int nIdx = 0;
 		char c;
 		int state;
-		while ( aIdx < argsArray.length ) {
+		boolean bStopParsing = false;
+		while ( aIdx < argsArray.length && !bStopParsing ) {
 			argStr = argsArray[ aIdx++ ];
 			if ( argStr.startsWith( "--" ) ) {
 				cIdx = 2;
 				pIdx = cIdx;
 				option = null;
 				arg = null;
-				while ( cIdx < argStr.length() && Character.isLetter( argStr.charAt( cIdx ) ) ) {
+				while ( cIdx < argStr.length() && (Character.isLetter( argStr.charAt( cIdx ) ) || (argStr.charAt( cIdx ) == '-' && argStr.charAt( cIdx - 1 ) != '-') ) ) {
 					++cIdx;
 				}
 				if ( pIdx == cIdx ) {
@@ -117,7 +125,7 @@ public class ArgumentParser {
 							}
 						}
 						else {
-							throw new ParseException( "Unknown option '-" + c + "'." );
+							throw new ArgumentParseException( "Unknown option '-" + c + "'." );
 						}
 						break;
 					case SAS_OPTIONAL_CHAR:
@@ -136,7 +144,7 @@ public class ArgumentParser {
 							arg.value = "" + c;
 						}
 						else {
-							throw new ParseException( "invalid argument value '" + c + "' for option -- " + arg.option.shortName );
+							throw new ArgumentParseException( "invalid argument value '" + c + "' for option -- " + arg.option.shortName );
 						}
 						break;
 					case SAS_EQU_OR_TEXT:
@@ -168,7 +176,7 @@ public class ArgumentParser {
 						}
 						else {
 							if ( cIdx < argStr.length() ) {
-								throw new ParseException( "argument value beyond end quote" );
+								throw new ArgumentParseException( "argument value beyond end quote" );
 							}
 						}
 						break;
@@ -201,10 +209,10 @@ public class ArgumentParser {
 				else {
 					if ( argStr.startsWith( "\"" ) || argStr.endsWith( "\"" ) ) {
 						if ( !argStr.startsWith( "\"" ) ) {
-							throw new ParseException( "argument value missing start quote" );
+							throw new ArgumentParseException( "argument value missing start quote" );
 						}
 						if ( !argStr.endsWith( "\"" ) ) {
-							throw new ParseException( "argument value missing end quote" );
+							throw new ArgumentParseException( "argument value missing end quote" );
 						}
 						argStr = argStr.substring( 1, argStr.length() - 1 );
 					}
@@ -215,13 +223,20 @@ public class ArgumentParser {
 					else {
 						if ( nIdx < options.namedArguments.size() ) {
 							option = options.namedArguments.get( nIdx );
-							if ( option.min == 1 && option.max == 1 ) {
+							if ( (option.min == 0 || option.min == 1) && option.max == 1 ) {
 								arg = new Argument();
 								arg.option = option;
 								arg.value = argStr;
 								//args.switchArgsList.add( arg );
 								args.idMap.put( option.id, arg );
 								++nIdx;
+								bStopParsing = option.bStopParsing;
+								if ( bStopParsing ) {
+									if ( aIdx < argsArray.length ) {
+										args.argsArray = new String[ argsArray.length - aIdx ];
+										System.arraycopy( argsArray, aIdx, args.argsArray, 0, argsArray.length - aIdx );
+									}
+								}
 							}
 							else {
 								if ( nArg == null) {
@@ -238,6 +253,7 @@ public class ArgumentParser {
 							}
 						}
 						else {
+							//throw new IllegalStateException( "Missing code." );
 						}
 					}
 				}
@@ -245,11 +261,11 @@ public class ArgumentParser {
 		}
 		if ( !argStack.isEmpty() ) {
 			arg = argStack.remove();
-			throw new ParseException( "option " + arg.name + " requires an argument." );
+			throw new ArgumentParseException( "option " + arg.name + " requires an argument." );
 		}
 		if ( nArg != null ) {
 			if ( nArg.values.size() < nArg.option.min ) {
-				throw new ParseException( "argument(s) required -- " + nArg.option.shortName );
+				throw new ArgumentParseException( "argument(s) required -- " + nArg.option.shortName );
 			}
 			nArg = null;
 			++nIdx;
@@ -257,7 +273,7 @@ public class ArgumentParser {
 		while ( nIdx < options.namedArguments.size() ) {
 			option = options.namedArguments.get( nIdx++ );
 			if ( option.min > 0 ) {
-				throw new ParseException( "argument(s) required -- " + option.shortName );
+				throw new ArgumentParseException( "argument(s) required -- " + option.shortName );
 			}
 		}
 		return args;

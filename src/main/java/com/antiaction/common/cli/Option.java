@@ -49,6 +49,8 @@ public class Option {
 	public int min;
 	public int max;
 
+	public Boolean bStopParsing = false;
+
 	public Option setValueRequired() {
 		bValueRequired = true;
 		return this;
@@ -57,6 +59,11 @@ public class Option {
 	public Option setTrailingValueChar(String shortValueOptions, boolean bShortValueOptional) {
 		this.shortValueOptions = shortValueOptions;
 		this.bShortValueOptional = bShortValueOptional;
+		return this;
+	}
+
+	public Option setStopParsing() {
+		bStopParsing = true;
 		return this;
 	}
 
