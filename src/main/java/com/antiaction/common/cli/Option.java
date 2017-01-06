@@ -42,14 +42,17 @@ public class Option {
 
 	public boolean bValueRequired = false;
 	public String shortValueOptions;
-	public Boolean bShortValueOptional;
+	public Boolean bShortValueOptional = null;
 
 	//byte valueType = VT_NONE;
 	//byte shortValueType = SVT_NONE;
 	public int min;
 	public int max;
 
-	public Boolean bStopParsing = false;
+	public boolean bStopParsing = false;
+
+	public Option() {
+	}
 
 	public Option setValueRequired() {
 		bValueRequired = true;

@@ -38,7 +38,7 @@ public class CommandLineTest {
 				System.out.println( argument.option.id + "=" + argument.value );
 			}
 		}
-		catch (ArgumentParseException e) {
+		catch (ArgumentParserException e) {
 			e.printStackTrace();
 		}
 	}

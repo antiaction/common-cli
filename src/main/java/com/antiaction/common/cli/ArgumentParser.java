@@ -13,7 +13,7 @@ public class ArgumentParser {
 	private static final int SAS_QUOTED_TEXT = 5;
 	private static final int SAS_TEXT = 6;
 
-	public static CommandLine parse(String[] argsArray, Options options, CommandLine args) throws ArgumentParseException {
+	public static CommandLine parse(String[] argsArray, Options options, CommandLine args) throws ArgumentParserException {
 		if ( options == null ) {
 			throw new IllegalArgumentException( "Options can not be null!" );
 		}
@@ -125,7 +125,7 @@ public class ArgumentParser {
 							}
 						}
 						else {
-							throw new ArgumentParseException( "Unknown option '-" + c + "'." );
+							throw new ArgumentParserException( "Unknown option '-" + c + "'." );
 						}
 						break;
 					case SAS_OPTIONAL_CHAR:
@@ -144,7 +144,7 @@ public class ArgumentParser {
 							arg.value = "" + c;
 						}
 						else {
-							throw new ArgumentParseException( "invalid argument value '" + c + "' for option -- " + arg.option.shortName );
+							throw new ArgumentParserException( "invalid argument value '" + c + "' for option -- " + arg.option.shortName );
 						}
 						break;
 					case SAS_EQU_OR_TEXT:
@@ -176,7 +176,7 @@ public class ArgumentParser {
 						}
 						else {
 							if ( cIdx < argStr.length() ) {
-								throw new ArgumentParseException( "argument value beyond end quote" );
+								throw new ArgumentParserException( "argument value beyond end quote" );
 							}
 						}
 						break;
@@ -209,10 +209,10 @@ public class ArgumentParser {
 				else {
 					if ( argStr.startsWith( "\"" ) || argStr.endsWith( "\"" ) ) {
 						if ( !argStr.startsWith( "\"" ) ) {
-							throw new ArgumentParseException( "argument value missing start quote" );
+							throw new ArgumentParserException( "argument value missing start quote" );
 						}
 						if ( !argStr.endsWith( "\"" ) ) {
-							throw new ArgumentParseException( "argument value missing end quote" );
+							throw new ArgumentParserException( "argument value missing end quote" );
 						}
 						argStr = argStr.substring( 1, argStr.length() - 1 );
 					}
@@ -261,11 +261,11 @@ public class ArgumentParser {
 		}
 		if ( !argStack.isEmpty() ) {
 			arg = argStack.remove();
-			throw new ArgumentParseException( "option " + arg.name + " requires an argument." );
+			throw new ArgumentParserException( "option " + arg.name + " requires an argument." );
 		}
 		if ( nArg != null ) {
 			if ( nArg.values.size() < nArg.option.min ) {
-				throw new ArgumentParseException( "argument(s) required -- " + nArg.option.shortName );
+				throw new ArgumentParserException( "argument(s) required -- " + nArg.option.shortName );
 			}
 			nArg = null;
 			++nIdx;
@@ -273,7 +273,7 @@ public class ArgumentParser {
 		while ( nIdx < options.namedArguments.size() ) {
 			option = options.namedArguments.get( nIdx++ );
 			if ( option.min > 0 ) {
-				throw new ArgumentParseException( "argument(s) required -- " + option.shortName );
+				throw new ArgumentParserException( "argument(s) required -- " + option.shortName );
 			}
 		}
 		return args;

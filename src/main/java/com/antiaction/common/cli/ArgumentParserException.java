@@ -8,29 +8,27 @@ package com.antiaction.common.cli;
 
 import java.io.IOException;
 
-public class ArgumentParseException extends IOException {
+public class ArgumentParserException extends IOException {
 
 	/**
 	 * UID.
 	 */
 	private static final long serialVersionUID = -8007926073603384778L;
 
-	public ArgumentParseException() {
+	public ArgumentParserException() {
 		super();
 	}
 
-	public ArgumentParseException(String message) {
+	public ArgumentParserException(String message) {
 		super( message );
 	}
 
-	/*
-	public ParseException(String message, Throwable cause) {
+	public ArgumentParserException(String message, Throwable cause) {
 		super( message, cause );
 	}
 
-	public ParseException(Throwable cause) {
+	public ArgumentParserException(Throwable cause) {
 		super( cause );
 	}
-	*/
 
 }

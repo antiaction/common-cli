@@ -19,7 +19,7 @@ public class TestCommandLine {
 			cmdLine = ArgumentParser.parse( "-d C:\\*.gz".split( " " ), null, null );
 			Assert.fail( "Exception expected!" );
 		}
-		catch (ArgumentParseException e) {
+		catch (ArgumentParserException e) {
 			e.printStackTrace();
 			Assert.fail( "Unexpected exception!" );
 		}
@@ -162,7 +162,7 @@ public class TestCommandLine {
 			options.addNamedArgument("files", 102, 1, Integer.MAX_VALUE);
 
 		}
-		catch (ArgumentParseException e) {
+		catch (ArgumentParserException e) {
 			e.printStackTrace();
 			Assert.fail( "Unexpected exception!" );
 		}
@@ -175,11 +175,11 @@ public class TestCommandLine {
 		CommandLine cmdLine;
 		Argument argument;
 
-		options = new Options();
-		options.addOption( "-w", "--workers", 1, 100, "workers" ).setValueRequired();
-		options.addNamedArgument( "command", 101, 1, 1).setStopParsing();
-
 		try {
+			options = new Options();
+			options.addOption( "-w", "--workers", 1, 100, "workers" ).setValueRequired();
+			options.addNamedArgument( "command", 101, 1, 1).setStopParsing();
+
 			cmdLine = ArgumentParser.parse( "--workers=4 read -w8 write".split( " " ), options, null );
 			Assert.assertNotNull( cmdLine );
 			Assert.assertEquals( 2, cmdLine.idMap.size() );
@@ -198,7 +198,7 @@ public class TestCommandLine {
 			Assert.assertEquals( "-w8", cmdLine.argsArray[ 0 ] );
 			Assert.assertEquals( "write", cmdLine.argsArray[ 1 ] );
 		}
-		catch (ArgumentParseException e) {
+		catch (ArgumentParserException e) {
 			e.printStackTrace();
 			Assert.fail( "Unexpected exception!" );
 		}

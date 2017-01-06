@@ -30,7 +30,7 @@ public class Options {
 		this.bSingleCharDashOptions = bSingleCharDashOptions;
 	}
 
-	public Option addTextOption(String command, int id, int subId, String desc) {
+	public Option addTextOption(String command, int id, int subId, String desc) throws ArgumentParserException {
 		Option option = new Option();
 		option.type = Option.T_COMMAND;
 		option.id = id;
@@ -41,14 +41,14 @@ public class Options {
 			textOptions.put( option.command, option );
 		}
 		else {
-			throw new IllegalArgumentException( "Invalid text option definition: " + command );
+			throw new ArgumentParserException( "Invalid text option definition: " + command );
 		}
 		return option;
 	}
 
-	public Option addOption(String shortName, String longName, int id, int subId, String desc) {
+	public Option addOption(String shortName, String longName, int id, int subId, String desc) throws ArgumentParserException {
 		if ( (shortName == null || shortName.length() == 0) && (longName == null || longName.length() == 0)) {
-			throw new IllegalArgumentException( "Invalid argument definition - missing both short and long name." );
+			throw new ArgumentParserException( "Invalid argument definition - missing both short and long name." );
 		}
 		Option option = new Option();
 		option.type = Option.T_OPTION;
@@ -59,15 +59,24 @@ public class Options {
 			if ( longName.startsWith( "--" ) ) {
 				longName = longName.substring( "--".length() );
 				if ( longName.length() > 0 ) {
+					int pc = '-';
+					int c;
+					for (int i=0; i<longName.length(); ++i) {
+						c = longName.charAt( i );
+						if (!(Character.isLetterOrDigit(c) || c == '-') || (c == '-' && pc == '-')) {
+							throw new ArgumentParserException( "Invalid character('" + (char)c + "') in argument definition: --" + longName );
+						}
+						pc = c;
+					}
 					option.longName = longName.toLowerCase();
 					longOptions.put( option.longName, option );
 				}
 				else {
-					throw new IllegalArgumentException( "Empty argument definition: --" + longName );
+					throw new ArgumentParserException( "Empty argument definition: --" + longName );
 				}
 			}
 			else {
-				throw new IllegalArgumentException( "Invalid argument definition: " + longName );
+				throw new ArgumentParserException( "Invalid argument definition: " + longName );
 			}
 		}
 		if ( shortName != null ) {
@@ -75,29 +84,29 @@ public class Options {
 				shortName = shortName.substring( "-".length() );
 				if ( shortName.length() > 0 ) {
 					if ( bSingleCharDashOptions && shortName.length() > 1 ) {
-						throw new IllegalArgumentException( "Invalid argument definition length: -" + shortName );
+						throw new ArgumentParserException( "Invalid argument definition length: -" + shortName );
 					}
 					option.shortName = shortName;
 					shortOptions.put( option.shortName.charAt( 0 ), option );
 				}
 				else {
-					throw new IllegalArgumentException( "Empty argument definition length: -" + shortName );
+					throw new ArgumentParserException( "Empty argument definition length: -" + shortName );
 				}
 			}
 			else {
-				throw new IllegalArgumentException( "Invalid argument definition: " + shortName );
+				throw new ArgumentParserException( "Invalid argument definition: " + shortName );
 			}
 		}
 		return option;
 	}
 
-	public Option addNamedArgument(String name, int id) {
+	public Option addNamedArgument(String name, int id) throws ArgumentParserException {
 		return addNamedArgument( name, id, 1, 1 );
 	}
 
-	public Option addNamedArgument(String name, int id, int min, int max) {
+	public Option addNamedArgument(String name, int id, int min, int max) throws ArgumentParserException {
 		if ( max <= 0 && max < min ) {
-			throw new IllegalArgumentException( "Invalid argument number interval: " + min + ", " + max );
+			throw new ArgumentParserException( "Invalid argument number interval: " + min + ", " + max );
 		}
 		Option option = new Option();
 		option.id = id;
