@@ -30,31 +30,11 @@ public class Options {
 		this.bSingleCharDashOptions = bSingleCharDashOptions;
 	}
 
-	public Option addTextOption(String command, int id, int subId, String desc) throws ArgumentParserException {
-		Option option = new Option();
-		option.type = Option.T_COMMAND;
-		option.id = id;
-		option.subId = subId;
-		option.desc = desc;
-		if ( command != null && command.length() > 0 && !command.startsWith( "-" ) ) {
-			option.command = command.toLowerCase();
-			textOptions.put( option.command, option );
-		}
-		else {
-			throw new ArgumentParserException( "Invalid text option definition: " + command );
-		}
-		return option;
-	}
-
 	public Option addOption(String shortName, String longName, int id, int subId, String desc) throws ArgumentParserException {
-		if ( (shortName == null || shortName.length() == 0) && (longName == null || longName.length() == 0)) {
+		if ( (shortName == null || shortName.length() == 0) && (longName == null || longName.length() == 0) ) {
 			throw new ArgumentParserException( "Invalid argument definition - missing both short and long name." );
 		}
-		Option option = new Option();
-		option.type = Option.T_OPTION;
-		option.id = id;
-		option.subId = subId;
-		option.desc = desc;
+		Option option = Option.option( id, subId, desc );
 		if ( longName != null ) {
 			if ( longName.startsWith( "--" ) ) {
 				longName = longName.substring( "--".length() );
@@ -114,6 +94,16 @@ public class Options {
 		option.min = min;
 		option.max = max;
 		namedArguments.add( option );
+		return option;
+	}
+
+	public Option addTextOption(String command, int id, int subId, String desc) throws ArgumentParserException {
+		if ( command == null || command.length() == 0 || command.startsWith( "-" ) ) {
+			throw new ArgumentParserException( "Invalid text option definition: " + command );
+		}
+		Option option = Option.command( id, subId, desc );
+		option.command = command.toLowerCase();
+		textOptions.put( option.command, option );
 		return option;
 	}
 

@@ -2,7 +2,6 @@ package com.antiaction.common.cli;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
@@ -16,35 +15,31 @@ public class SynchronizedOutput {
 
 	public PrintStream out = null;
 
-	public SynchronizedOutput(String fname) {
+	public SynchronizedOutput(String fname, int buffersize) throws IOException {
 		try {
 			raf = new RandomAccessFile(fname, "rw");
 			raf.seek(0);
 			raf.setLength(0);
 			RandomAccessFileOutputStream fout = new RandomAccessFileOutputStream(raf);
-			out = new PrintStream(new BufferedOutputStream(fout, 1024*1024), false, "UTF-8");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			out = new PrintStream(new BufferedOutputStream(fout, buffersize), false, "UTF-8");
+		}
+		catch (IOException e) {
+			close();
+			throw e;
 		}
 	}
 
-	public SynchronizedOutput(File file) {
+	public SynchronizedOutput(File file, int buffersize) throws IOException {
 		try {
 			raf = new RandomAccessFile(file, "rw");
 			raf.seek(0);
 			raf.setLength(0);
 			RandomAccessFileOutputStream fout = new RandomAccessFileOutputStream(raf);
-			out = new PrintStream(new BufferedOutputStream(fout, 1024*1024), false, "UTF-8");
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			out = new PrintStream(new BufferedOutputStream(fout, buffersize), false, "UTF-8");
+		}
+		catch (IOException e) {
+			close();
+			throw e;
 		}
 	}
 
@@ -66,17 +61,16 @@ public class SynchronizedOutput {
 		if (rafOut != null) {
 			try {
 				rafOut.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			}
+			catch (IOException e) {
 			}
 			rafOut = null;
 		}
 		if (raf != null) {
 			try {
 				raf.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+			}
+			catch (IOException e) {
 			}
 			raf = null;
 		}

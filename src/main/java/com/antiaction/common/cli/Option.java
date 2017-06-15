@@ -8,10 +8,13 @@ package com.antiaction.common.cli;
 
 public class Option {
 
+	/** Short(-) and/or Long(--) named argument. */
+	public static final int T_OPTION = 0;
 	/** Named argument. */
-	public static final int T_COMMAND = 0;
-	/** Short/Long named argument. */
-	public static final int T_OPTION = 1;
+	public static final int T_NAMED_ARGUMENT = 1;
+
+	public static final int T_COMMAND = 2;
+
 
 	// Variable Type.
 	//public static final int VT_NONE = 0;
@@ -41,6 +44,8 @@ public class Option {
 	public String desc;
 
 	public boolean bValueRequired = false;
+
+	// TODO
 	public String shortValueOptions;
 	public Boolean bShortValueOptional = null;
 
@@ -52,6 +57,29 @@ public class Option {
 	public boolean bStopParsing = false;
 
 	public Option() {
+	}
+
+	public static Option option(int id, int subId, String desc) {
+		Option option = new Option();
+		option.type = Option.T_OPTION;
+		option.id = id;
+		option.subId = subId;
+		option.desc = desc;
+		return option;
+	}
+
+	public static Option namedArgument() {
+		Option option = new Option();
+		return option;
+	}
+
+	public static Option command(int id, int subId, String desc) {
+		Option option = new Option();
+		option.type = Option.T_COMMAND;
+		option.id = id;
+		option.subId = subId;
+		option.desc = desc;
+		return option;
 	}
 
 	public Option setValueRequired() {
