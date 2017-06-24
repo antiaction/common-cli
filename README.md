@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/nclarkekb/antiaction-common-cli.svg?branch=master)](https://travis-ci.org/nclarkekb/antiaction-common-cli)
+[![codecov](https://codecov.io/gh/nclarkekb/antiaction-common-cli/branch/master/graph/badge.svg)](https://codecov.io/gh/nclarkekb/antiaction-common-cli)
+
 antiaction-common-cli
 =====================
 
